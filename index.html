@@ -5,22 +5,31 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>App - Weather Team</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"rel="stylesheet"integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
-  crossorigin="anonymous">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
   <link rel="stylesheet" href="style.css">
 </head>
-    <!--Drótos Gábor és Pető Milán-->
+<!--Drótos Gábor és Pető Milán-->
+
 <body>
 
   <div class="app container">
     <header class="d-flex flex-column flex-sm-row justify-content-between align-items-stretch align-items-sm-center gap-3 mb-4">
-  <h1>Időjárás</h1>
+      <h1>Időjárás</h1>
 
-  <div class="search d-flex gap-2">
-    <input id="cityInput" type="text" placeholder="Város neve..." value="Budapest">
-    <button onclick="search()" title="Keresés">🔍</button>
-  </div>
-</header>
+      <div class="search d-flex gap-2">
+        <input id="cityInput" type="text" placeholder="Város neve..." value="Budapest">
+        <button onclick="search()" title="Keresés">
+
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search"
+            viewBox="0 0 16 16">
+            <path
+              d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0" />
+          </svg>
+
+        </button>
+      </div>
+    </header>
 
     <!-- ERROR -->
 
@@ -40,7 +49,7 @@
   </div>
 
   <script> // Pető Milán
-    const URL_BASE_CITY     = "https://geocoding-api.open-meteo.com/v1/search";
+    const URL_BASE_CITY = "https://geocoding-api.open-meteo.com/v1/search";
     const URL_BASE_FORECAST = "https://api.open-meteo.com/v1/forecast";
 
 
@@ -50,11 +59,11 @@
       const url =
         URL_BASE_CITY +
         "?name=" +
-        encodeURIComponent (name) +
+        encodeURIComponent(name) +
         "&count=1" +
         "&language=hu" +
         "&format=json"
-      ;
+        ;
 
       const response = await fetch(url);
 
@@ -101,7 +110,7 @@
         ",sunset" +
 
         "&timezone=auto"
-      ;
+        ;
 
       const response = await fetch(url);
 
@@ -118,8 +127,8 @@
 
     function show_weather(city, weather) {
       const current = weather.current;
-      const daily   = weather.daily;
-      const code    = current.weather_code;
+      const daily = weather.daily;
+      const code = current.weather_code;
 
       hide_error();
 
@@ -176,7 +185,7 @@
       weatherelement.innerHTML = `
         <div class="weather-card">
           <div class="current-location">
-            📍 ${city.name}, ${city.country}
+            ${city.name}, ${city.country}
           </div>
 
           <div class="current-date">
@@ -191,51 +200,53 @@
             </div>
           </div>
 
-         <div class="current-details row g-3">
-  <div class="col-12 col-sm-6 col-lg-3">
-    <div class="current-detail">
-      Hőérzet
-      <strong>
-        ${Math.round(current.apparent_temperature)}°C
-      </strong>
-    </div>
-  </div>
+          <div class="current-details row g-3">
+            <div class="col-12 col-sm-6 col-lg-3">
+              <div class="current-detail">
+                Hőérzet
+                <strong>
+                  ${Math.round(current.apparent_temperature)}°C
+                </strong>
+              </div>
+            </div>
+        
+            <div class="col-12 col-sm-6 col-lg-3">
+              <div class="current-detail">
+                Páratartalom
+                <strong>
+                  ${current.relative_humidity_2m}%
+                </strong>
+              </div>
+            </div>
+        
+            <div class="col-12 col-sm-6 col-lg-3">
+              <div class="current-detail">
+                Szél
+                <strong>
+                  ${Math.round(current.wind_speed_10m)} km/h
+                </strong>
+              </div>
+            </div>
+        
+            <div class="col-12 col-sm-6 col-lg-3">
+              <div class="current-detail">
+                Csapadék
+                <strong>
+                  ${current.precipitation} mm
+                </strong>
+              </div>
+            </div>
+          </div>
+        </div>
 
-  <div class="col-12 col-sm-6 col-lg-3">
-    <div class="current-detail">
-      Páratartalom
-      <strong>
-        ${current.relative_humidity_2m}%
-      </strong>
-    </div>
-  </div>
-
-  <div class="col-12 col-sm-6 col-lg-3">
-    <div class="current-detail">
-      Szél
-      <strong>
-        ${Math.round(current.wind_speed_10m)} km/h
-      </strong>
-    </div>
-  </div>
-
-  <div class="col-12 col-sm-6 col-lg-3">
-    <div class="current-detail">
-      Csapadék
-      <strong>
-        ${current.precipitation} mm
-      </strong>
-    </div>
-  </div>
-</div>
         <div class="weather-card">
           <div class="forecast-title">
             7 napos előrejelzés
           </div>
-
-         <div class="forecast row g-2">
-  ${forecastHTML}
-</div>
+                
+          <div class="forecast row g-2">
+            ${forecastHTML}
+          </div>
         </div>
       `;
     }
@@ -257,6 +268,8 @@
     function show_error(message) {
       const error = document.getElementById("error");
 
+      weather.innerHTML = "";
+
       error.innerText = `HIBA: ${message}`;
 
       error.style.display = "block";
@@ -273,14 +286,14 @@
     async function search() {
       const input = document.getElementById("cityInput");
 
-      show_loading ();
+      show_loading();
 
       let city, weather;
 
       try {
-        city    = await fetch_city(input.value.trim());
+        city = await fetch_city(input.value.trim());
         weather = await fetch_weather(city)
-      } catch ({_, message}) {
+      } catch ({ _, message }) {
         show_error(message);
         return;
       }
@@ -289,7 +302,6 @@
     }
 
     search();
-
 
     document.getElementById("cityInput").addEventListener(
       "keydown",
@@ -302,4 +314,3 @@
 </body>
 
 </html>
-
