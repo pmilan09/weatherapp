@@ -1,9 +1,5 @@
-<!--Drótos_Gábor-->
+/*Drótos_Gábor*/
 /* -- GENERAL -- */
-.app{
-    width: min(100% 960px);
-    margin: auto;
-}
  body {
      font-family: monospace;
      min-height: 100vh;
@@ -11,7 +7,7 @@
      color: #65E6D6;
      background-color: #07110F;
 }
- h1 {
+h1 {
      font-size: 32px;
 }
 /* -- CARD -- */
