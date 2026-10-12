@@ -27,9 +27,6 @@ h1 {
 }
 
 header {
-    /* color: var(--fg-black); */
-
-    /*font-weight: bold;*/
     background-color: #929ead;
     backdrop-filter: blur(15px);
     -webkit-backdrop-filter: blur(15px);
