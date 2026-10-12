@@ -1,0 +1,117 @@
+<!--Drótos_Gábor-->
+/* -- GENERAL -- */
+.app{
+    width: min(100% 960px);
+    margin: auto;
+}
+ body {
+     font-family: monospace;
+     min-height: 100vh;
+     padding: 25px;
+     color: #65E6D6;
+     background-color: #07110F;
+}
+ h1 {
+     font-size: 32px;
+}
+/* -- CARD -- */
+ .weather-card {
+     background-color: #0d1b18;
+     border: 1px solid #b9ff66;
+     backdrop-filter: blur(15px);
+     -webkit-backdrop-filter: blur(15px);
+     border-radius: 25px;
+     padding: 30px;
+     margin-bottom: 20px;
+     margin-top: 20px;
+     box-shadow: 0 15px 40px rgba(0,0,0,0.12);
+}
+/* -- FOOTER -- */
+ footer {
+     text-align: center;
+     opacity: 0.7;
+     margin-top: 15px;
+     font-size: 13px;
+}
+/* -- SEARCH -- */
+ .search input {
+     width: 230px;
+     padding: 13px 16px;
+     border: 1px solid #b9ff66;
+     outline: none;
+     border-radius: 25px;
+     background-color: #0d1b18;
+     color:white;
+     font-size: 16px;
+}
+ .search button{
+     padding: 11px;
+     border-radius: 25px;
+     cursor:pointer;
+     font-size: 15px;
+     background-color: #0d1b18;
+     border:1px solid #b9ff66;
+}
+/* -- CURRENT -- */
+ .current-location {
+     font-size: 25px;
+     font-weight: bold;
+     margin-bottom: 8px;
+}
+ .current-date {
+     opacity: 0.8;
+     margin-bottom: 25px;
+     text-transform: capitalize;
+}
+ .current-temperature {
+     font-size: 85px;
+     font-weight: 300;
+}
+ .current-detail {
+     background: rgba(255,255,255,0.13);
+     border-radius: 15px;
+     padding: 18px;
+     text-align: center;
+}
+ .current-detail strong {
+     display: block;
+     font-size: 18px;
+     margin-top: 5px;
+}
+/* -- FORECAST -- */
+ .forecast-title {
+     font-size: 23px;
+     margin-bottom: 18px;
+}
+ .forecast-day {
+     background: rgba(255,255,255,0.12);
+     border-radius: 17px;
+     padding: 18px 8px;
+     text-align: center;
+}
+ .forecast-day-name {
+     font-weight: bold;
+     margin-bottom: 12px;
+     text-transform: capitalize;
+}
+ .forecast-day-temperature-max {
+     font-size: 18px;
+     font-weight: bold;
+}
+ .forecast-day-temperature-min {
+     opacity: 0.65;
+     margin-top: 4px;
+}
+/* -- NOTIFICATIONS -- */
+ .loading {
+     text-align: center;
+     padding: 40px;
+     font-size: 20px;
+}
+ .error {
+     display: none;
+     background: rgba(255, 50, 50, 0.35);
+     padding: 15px;
+     border-radius: 12px;
+     margin-bottom: 20px;
+}
