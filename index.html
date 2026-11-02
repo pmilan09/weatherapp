@@ -48,6 +48,7 @@
     </footer>
   </div>
 
+  <script src="activities.js"></script>
   <script> // Pető Milán
     const URL_BASE_CITY = "https://geocoding-api.open-meteo.com/v1/search";
     const URL_BASE_FORECAST = "https://api.open-meteo.com/v1/forecast";
@@ -109,6 +110,7 @@
         ",sunrise" +
         ",sunset" +
 
+        "&hourly=apparent_temperature,precipitation,precipitation_probability,weather_code,wind_speed_10m,visibility,cloud_cover,is_day" +
         "&timezone=auto"
         ;
 
@@ -249,6 +251,7 @@
           </div>
         </div>
       `;
+      show_activity_cards(weather);
     }
 
 
