@@ -1,9 +1,16 @@
-// Egyszerű, időjáráson alapuló becslések az új kártyákhoz.
 function activity_card(title, result, description) {
+  const icons = {
+    "Vezetés": "bi-car-front-fill",
+    "Futás": "bi-person-running",
+    "Horgászat": "bi-water",
+    "Kabát / esernyő": "bi-umbrella-fill",
+    "Csillagászat": "bi-moon-stars-fill",
+    "Meddig lesz jó az idő?": "bi-clock"
+  };
   return `
     <div class="col-12 col-md-6 col-lg-4">
       <article class="weather-card activity-card">
-        <h2>${title}</h2>
+        <h2><i class="bi ${icons[title] || "bi-info-circle"}"></i> ${title}</h2>
         <strong>${result}</strong>
         <p>${description}</p>
       </article>
@@ -12,7 +19,6 @@ function activity_card(title, result, description) {
 }
 
 function forecast_time(time) {
-  // Az API a keresett város helyi idejét adja vissza.
   return time.slice(5, 10).replace("-", ". ") + ". " + time.slice(11, 16);
 }
 
@@ -35,13 +41,11 @@ function show_activity_cards(weather) {
   const hourly = weather.hourly;
   let cards = "";
 
-  // Az aktuális óra megkeresése a város helyi ideje szerint.
   let hour = -1;
   if (hourly && hourly.time) {
-    hour = hourly.time.indexOf(current.time.slice(0, 13) + ":00");
+    hour = hourly.time.indexOf((current.time || "").slice(0, 13) + ":00");
   }
 
-  // Hiányzó adatokból ne adjunk kedvező ajánlást.
   if (hour !== -1) {
     const fields = ["apparent_temperature", "precipitation", "precipitation_probability",
       "weather_code", "wind_speed_10m", "visibility", "cloud_cover", "is_day"];
@@ -150,7 +154,7 @@ function show_activity_cards(weather) {
     }
     cards += activity_card("Csillagászat", astronomy, astronomyText);
 
-    let goodUntil = "Most nem kedvező az idő";
+    let goodUntil = "Mostanában nem lesz kedvező";
     let goodUntilText = "Jó idő: 10–28 °C hőérzet, legfeljebb 0,1 mm csapadék, 40% alatti csapadékesély, 25 km/h alatti szél, köd és zivatar nélkül.";
     if (good_weather(hourly, hour) && temperature >= 10 && temperature <= 28 &&
         rain <= 0.1 && wind < 25 && code <= 3) {

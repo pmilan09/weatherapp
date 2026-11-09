@@ -199,3 +199,67 @@ footer {
     opacity: 0.85;
     line-height: 1.5;
 }
+
+
+/* Kis ikonok es grafikon */
+h1 .bi, .current-location .bi, .forecast-title .bi,
+.current-detail .bi, .activity-card h2 .bi {
+    margin-right: 6px;
+}
+.current-weather-icon {
+    display: block;
+    font-size: 48px;
+    margin-bottom: 8px;
+}
+.forecast-icon {
+    display: block;
+    font-size: 25px;
+    margin: 8px 0;
+}
+.forecast-rain {
+    font-size: 13px;
+    margin-top: 8px;
+}
+.temperature-chart {
+    overflow-x: auto;
+}
+.temperature-chart svg {
+    display: block;
+    width: 100%;
+    min-width: 560px;
+    height: auto;
+    color: var(--fg-white);
+}
+.temperature-chart .axis-text {
+    font-size: 12px;
+    fill: var(--fg-white);
+    opacity: .85;
+}
+.temperature-chart .rain-text {
+    font-size: 9px;
+    fill: #bfe3ff;
+}
+.temperature-chart .day-text {
+    font-weight: bold;
+    fill: #f4c95d;
+}
+.temperature-chart .value-text {
+    font-size: 12px;
+    fill: var(--fg-white);
+}
+.temperature-chart .value-strong {
+    font-size: 14px;
+    font-weight: bold;
+}
+.chart-range {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 22px;
+    margin: 12px 0 0;
+    font-size: 14px;
+}
+.chart-max .bi { color: #ff9f6b; }
+.chart-min .bi { color: #7cc7ff; }
+.search button {
+    min-width: 44px;
+}

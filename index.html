@@ -7,6 +7,7 @@
   <title>App - Weather Team</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
     integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link rel="stylesheet" href="style.css">
 </head>
 <!--Drótos Gábor és Pető Milán-->
@@ -15,11 +16,11 @@
 
   <div class="app container">
     <header class="d-flex flex-column flex-sm-row justify-content-between align-items-stretch align-items-sm-center gap-3 mb-4">
-      <h1 class="fw-bold">Időjárás</h1>
+      <h1 class="fw-bold"><i class="bi bi-cloud-sun" aria-hidden="true"></i> Időjárás</h1>
 
       <div class="search d-flex gap-2">
-        <input id="cityInput" type="text" placeholder="Város neve..." value="Budapest">
-        <button onclick="search()" title="Keresés">
+        <input id="cityInput" type="text" placeholder="Város neve..." value="Budapest" aria-label="Város neve">
+        <button onclick="search()" title="Keresés" aria-label="Keresés">
 
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search"
             viewBox="0 0 16 16">
@@ -27,6 +28,9 @@
               d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0" />
           </svg>
 
+        </button>
+        <button type="button" onclick="use_location()" title="Saját helyzet" aria-label="Saját helyzet">
+          <i class="bi bi-geo-alt-fill" aria-hidden="true"></i>
         </button>
       </div>
     </header>
@@ -38,13 +42,13 @@
     <!-- WEATHER -->
 
     <main id="weather">
-      <div class="weather-card loading">
+      <div class="weather-card loading" role="status">
         Betöltés...
       </div>
     </main>
 
     <footer>
-      Időjárási adatok: Open-Meteo
+      Időjárási adatok: <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a>
     </footer>
   </div>
 
@@ -53,266 +57,279 @@
     const URL_BASE_CITY = "https://geocoding-api.open-meteo.com/v1/search";
     const URL_BASE_FORECAST = "https://api.open-meteo.com/v1/forecast";
 
-
     async function fetch_city(name) {
       name = name.trim();
+      if (name === "") throw new Error("Írj be egy városnevet.");
 
-      const url =
-        URL_BASE_CITY +
-        "?name=" +
-        encodeURIComponent(name) +
-        "&count=1" +
-        "&language=hu" +
-        "&format=json"
-        ;
-
+      const url = URL_BASE_CITY + "?name=" + encodeURIComponent(name) +
+        "&count=1&language=hu&format=json";
       const response = await fetch(url);
-
-      if (!response.ok)
-        throw Error(
-          `Nem sikerült fetchelni (${url})`
-        );
+      if (!response.ok) throw new Error("Nem sikerült elérni a városkeresőt.");
 
       const data = await response.json();
-
       if (!data.results || data.results.length === 0)
-        throw new Error(
-          `Nem található “${name}” város`
-        );
+        throw new Error("Nem található ilyen város: " + name);
 
-      const place = data.results[0];
-
-      return place;
+      return data.results[0];
     }
 
+    async function reverse_city(latitude, longitude) {
+      try {
+        const url = "https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=10&accept-language=hu" +
+          "&lat=" + latitude + "&lon=" + longitude;
+        const response = await fetch(url);
+        if (response.ok) {
+          const data = await response.json();
+          const a = data.address || {};
+          const name = a.city || a.town || a.village || a.municipality || a.county || data.name;
+          if (name) return { name: name, country: a.country || "" };
+        }
+      } catch (e) {}
+      try {
+        const url = "https://api.bigdatacloud.net/data/reverse-geocode-client?localityLanguage=hu" +
+          "&latitude=" + latitude + "&longitude=" + longitude;
+        const response = await fetch(url);
+        if (response.ok) {
+          const data = await response.json();
+          const name = data.city || data.locality;
+          if (name) return { name: name, country: data.countryName || "" };
+        }
+      } catch (e) {  }
+      return { name: "Saját helyzet", country: "" };
+    }
+
+    let request_id = 0; 
 
     async function fetch_weather(city) {
-      const url =
-        URL_BASE_FORECAST +
+      const url = URL_BASE_FORECAST +
         "?latitude=" + city.latitude +
         "&longitude=" + city.longitude +
-
-        "&current=" +
-
-        "temperature_2m" +
-        ",relative_humidity_2m" +
-        ",apparent_temperature" +
-        ",precipitation" +
-        ",weather_code" +
-        ",wind_speed_10m" +
-
-        "&daily=" +
-
-        "weather_code" +
-        ",temperature_2m_max" +
-        ",temperature_2m_min" +
-        ",precipitation_probability_max" +
-        ",sunrise" +
-        ",sunset" +
-
-        "&hourly=apparent_temperature,precipitation,precipitation_probability,weather_code,wind_speed_10m,visibility,cloud_cover,is_day" +
-        "&timezone=auto"
-        ;
-
+        "&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m" +
+        "&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,sunrise,sunset" +
+        "&hourly=temperature_2m,apparent_temperature,precipitation,precipitation_probability,weather_code,wind_speed_10m,visibility,cloud_cover,is_day" +
+        "&forecast_days=7&timezone=auto";
       const response = await fetch(url);
-
-      if (!response.ok)
-        throw Error(
-          `Nem sikerült fetchelni (${url})`
-        );
-
-      const data = await response.json();
-
-      return data;
+      if (!response.ok) throw new Error("Nem sikerült lekérni az időjárási adatokat.");
+      return await response.json();
     }
 
+    function weather_icon(code) {
+      if (code === 0) return "bi-sun-fill";
+      if (code <= 2) return "bi-cloud-sun-fill";
+      if (code === 3) return "bi-clouds-fill";
+      if (code === 45 || code === 48) return "bi-cloud-fog-fill";
+      if (code >= 51 && code <= 57) return "bi-cloud-drizzle-fill";
+      if (code >= 61 && code <= 67) return "bi-cloud-rain-fill";
+      if (code >= 71 && code <= 77 || code === 85 || code === 86) return "bi-snow";
+      if (code >= 80 && code <= 82) return "bi-cloud-rain-heavy-fill";
+      if (code >= 95) return "bi-cloud-lightning-rain-fill";
+      return "bi-cloud-fill";
+    }
 
     function show_weather(city, weather) {
       const current = weather.current;
       const daily = weather.daily;
-      const code = current.weather_code;
+      if (!current || !daily || !daily.time) throw new Error("Hiányos időjárási adatok érkeztek.");
 
       hide_error();
-
       let forecastHTML = "";
 
-      // Hét napjai
-      for (let i = 0; i < 7; i++) {
-        const now = new Date(daily.time[i]);
-
-        const day_name = now.toLocaleDateString(
-          "hu-HU",
-          {
-            weekday: "short"
-          }
-        );
-
-        const temp_max = Math.round(daily.temperature_2m_max[i]);
-        const temp_min = Math.round(daily.temperature_2m_min[i]);
-
+      for (let i = 0; i < daily.time.length; i++) {
+        const day_name = new Date(daily.time[i] + "T12:00:00").toLocaleDateString("hu-HU", { weekday: "short" });
+        const code = daily.weather_code[i];
         forecastHTML += `
-  <div class="col-6 col-sm-4 col-md-3 col-lg">
-    <div class="forecast-day">
-      <div class="forecast-day-name">
-        ${day_name}
-      </div>
-
-      <div class="forecast-day-temperature-max">
-        ${temp_max}°
-      </div>
-
-      <div class="forecast-day-temperature-min">
-        ${temp_min}°
-      </div>
-    </div>
-  </div>
-`;
+          <div class="col-6 col-sm-4 col-md-3 col-lg">
+            <div class="forecast-day">
+              <div class="forecast-day-name">${day_name}</div>
+              <i class="bi ${weather_icon(code)} forecast-icon" aria-hidden="true"></i>
+              <div class="forecast-day-temperature-max">${Math.round(daily.temperature_2m_max[i])}°</div>
+              <div class="forecast-day-temperature-min">${Math.round(daily.temperature_2m_min[i])}°</div>
+              <div class="forecast-rain"><i class="bi bi-droplet" aria-hidden="true"></i> ${daily.precipitation_probability_max[i] ?? "–"}%</div>
+            </div>
+          </div>`;
       }
 
-      const weatherelement = document.getElementById("weather");
+      const date_text = new Date().toLocaleDateString("hu-HU", {
+        weekday: "long", year: "numeric", month: "long", day: "numeric",
+        timeZone: weather.timezone
+      });
 
-      const now = new Date();
-
-      const date_text =
-        now.toLocaleDateString(
-          "hu-HU",
-          {
-            weekday: "long",
-            year: "numeric",
-            month: "long",
-            day: "numeric"
-          }
-        );
-
-      weatherelement.innerHTML = `
+      document.getElementById("weather").innerHTML = `
         <div class="weather-card">
-          <div class="current-location">
-            ${city.name}, ${city.country}
-          </div>
-
-          <div class="current-date">
-            ${date_text}
-          </div>
-
+          <div class="current-location"><i class="bi bi-geo-alt-fill"></i> ${esc(city.name)}${city.country ? ", " + esc(city.country) : ""}</div>
+          <div class="current-date">${date_text}</div>
           <div class="current d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
-            <div>
-              <div class="current-temperature">
-                ${Math.round(current.temperature_2m)}°C
-              </div>
+            <div class="text-center">
+              <i class="bi ${weather_icon(current.weather_code)} current-weather-icon" aria-hidden="true"></i>
+              <div class="current-temperature">${Math.round(current.temperature_2m)}°C</div>
             </div>
           </div>
-
           <div class="current-details row g-3">
-            <div class="col-12 col-sm-6 col-lg-3">
-              <div class="current-detail">
-                Hőérzet
-                <strong>
-                  ${Math.round(current.apparent_temperature)}°C
-                </strong>
-              </div>
-            </div>
-        
-            <div class="col-12 col-sm-6 col-lg-3">
-              <div class="current-detail">
-                Páratartalom
-                <strong>
-                  ${current.relative_humidity_2m}%
-                </strong>
-              </div>
-            </div>
-        
-            <div class="col-12 col-sm-6 col-lg-3">
-              <div class="current-detail">
-                Szél
-                <strong>
-                  ${Math.round(current.wind_speed_10m)} km/h
-                </strong>
-              </div>
-            </div>
-        
-            <div class="col-12 col-sm-6 col-lg-3">
-              <div class="current-detail">
-                Csapadék
-                <strong>
-                  ${current.precipitation} mm
-                </strong>
-              </div>
-            </div>
+            <div class="col-6 col-sm-6 col-lg-3"><div class="current-detail"><i class="bi bi-thermometer-half"></i> Hőérzet<strong>${Math.round(current.apparent_temperature)}°C</strong></div></div>
+            <div class="col-6 col-sm-6 col-lg-3"><div class="current-detail"><i class="bi bi-droplet-half"></i> Páratartalom<strong>${current.relative_humidity_2m}%</strong></div></div>
+            <div class="col-6 col-sm-6 col-lg-3"><div class="current-detail"><i class="bi bi-wind"></i> Szél<strong>${Math.round(current.wind_speed_10m)} km/h</strong></div></div>
+            <div class="col-6 col-sm-6 col-lg-3"><div class="current-detail"><i class="bi bi-cloud-rain"></i> Csapadék<strong>${current.precipitation} mm</strong></div></div>
           </div>
         </div>
 
         <div class="weather-card">
-          <div class="forecast-title">
-            7 napos előrejelzés
-          </div>
-                
-          <div class="forecast row g-2">
-            ${forecastHTML}
-          </div>
+          <div class="forecast-title"><i class="bi bi-calendar-week"></i> 7 napos előrejelzés</div>
+          <div class="forecast row g-2">${forecastHTML}</div>
         </div>
-      `;
+
+        <div class="weather-card">
+          <div class="forecast-title"><i class="bi bi-graph-up"></i> Hőmérséklet a következő 24 órában</div>
+          <div class="temperature-chart">${temperature_chart(weather.hourly, current_hour_index(weather))}</div>
+        </div>`;
       show_activity_cards(weather);
     }
 
+    function esc(text) {
+      return String(text ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+    }
+
+    function current_hour_index(weather) {
+      const hourly = weather.hourly;
+      if (!hourly || !hourly.time) return 0;
+      const index = hourly.time.indexOf(((weather.current && weather.current.time) || "").slice(0, 13) + ":00");
+      return index === -1 ? 0 : index;
+    }
+
+    function temperature_chart(hourly, start) {
+      if (!hourly || !hourly.temperature_2m || !hourly.time) return "A grafikon most nem érhető el.";
+      start = start || 0;
+      const temps = hourly.temperature_2m.slice(start, start + 24);
+      const times = hourly.time.slice(start, start + 24);
+      const count = temps.length;
+      if (count < 2 || temps.some(t => typeof t !== "number")) return "A grafikon most nem érhető el.";
+
+      const W = 640, H = 322, left = 46, right = 18, top = 30, bottom = 84;
+      const plotW = W - left - right, plotH = H - top - bottom;
+      const dataMin = Math.min(...temps), dataMax = Math.max(...temps);
+
+
+      const span = Math.max(dataMax - dataMin, 2);
+      const step = span <= 6 ? 1 : span <= 12 ? 2 : span <= 30 ? 5 : 10;
+      const yMin = Math.floor((dataMin - 0.5) / step) * step;
+      const yMax = Math.ceil((dataMax + 0.5) / step) * step;
+      const x = i => left + i * plotW / (count - 1);
+      const y = t => top + plotH - (t - yMin) * plotH / (yMax - yMin);
+
+      let grid = "";
+      for (let t = yMin; t <= yMax; t += step) {
+        grid += `<line x1="${left}" y1="${y(t)}" x2="${W - right}" y2="${y(t)}" stroke="currentColor" opacity="${t === 0 ? .6 : .18}" ${t === 0 ? "" : 'stroke-dasharray="4 4"'}/>
+          <text x="${left - 8}" y="${y(t) + 4}" text-anchor="end" class="axis-text">${t}°</text>`;
+      }
+
+      let points = "", dots = "", xLabels = "", rain = "";
+      const iMin = temps.indexOf(dataMin), iMax = temps.indexOf(dataMax);
+      for (let i = 0; i < count; i++) {
+        const px = x(i), py = y(temps[i]);
+        points += px + "," + py + " ";
+        const hh = times[i].slice(11, 16);
+        const prob = hourly.precipitation_probability ? hourly.precipitation_probability[start + i] : null;
+
+        const isTick = i === 0 || (i >= 2 && Number(hh.slice(0, 2)) % 3 === 0);
+        const isLabel = isTick || i === iMin || i === iMax;
+        const isExtreme = i === iMin || i === iMax;
+        dots += `<circle cx="${px}" cy="${py}" r="${isExtreme ? 6 : 3.5}" fill="${isExtreme ? (i === iMax ? "#ff9f6b" : "#7cc7ff") : "#f4c95d"}" stroke="#F0F0F0" stroke-width="1.5">
+          <title>${hh} – ${Math.round(temps[i])}°C${typeof prob === "number" ? ", csapadékesély: " + prob + "%" : ""}</title></circle>`;
+        if (isLabel) {
+          dots += `<text x="${px}" y="${py - 11}" text-anchor="middle" class="value-text${isExtreme ? " value-strong" : ""}">${Math.round(temps[i])}°</text>`;
+        }
+        if (isTick) {
+          xLabels += `<line x1="${px}" y1="${top}" x2="${px}" y2="${top + plotH}" stroke="currentColor" opacity=".1"/>
+            <text x="${px}" y="${top + plotH + 18}" text-anchor="middle" class="axis-text">${i === 0 ? "most" : hh}</text>`;
+          if (i > 0 && hh === "00:00") {
+            xLabels += `<text x="${px}" y="${top + plotH + 34}" text-anchor="middle" class="axis-text day-text">holnap</text>`;
+          }
+        }
+
+        if (typeof prob === "number") {
+          const barH = prob * 16 / 100;
+          rain += `<rect x="${px - 5}" y="${H - 22 - barH}" width="10" height="${Math.max(barH, 0.5)}" rx="2" fill="#7cc7ff" opacity="${prob === 0 ? .25 : .9}"><title>${hh} – csapadékesély: ${prob}%</title></rect>
+            <text x="${px}" y="${H - 8}" text-anchor="middle" class="rain-text">${prob}%</text>`;
+        }
+      }
+      const area = `${x(0)},${y(yMin)} ${points} ${x(count - 1)},${y(yMin)}`;
+      const timeOf = i => times[i].slice(11, 16);
+
+      return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Hőmérséklet a következő 24 órában">
+        ${grid}${xLabels}
+        <polygon points="${area}" fill="#f4c95d" opacity=".15"/>
+        <polyline points="${points}" fill="none" stroke="#f4c95d" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+        ${dots}
+        ${rain}
+        <text x="${left - 8}" y="${H - 16}" text-anchor="end" class="axis-text">💧</text>
+        <text x="${left}" y="14" class="axis-text">°C</text>
+      </svg>
+      <p class="chart-range">
+        <span class="chart-max"><i class="bi bi-arrow-up-circle-fill"></i> Legmagasabb: <strong>${Math.round(dataMax)}°C</strong> (${timeOf(iMax)})</span>
+        <span class="chart-min"><i class="bi bi-arrow-down-circle-fill"></i> Legalacsonyabb: <strong>${Math.round(dataMin)}°C</strong> (${timeOf(iMin)})</span>
+        <span><i class="bi bi-droplet"></i> A kék oszlopok a csapadékesélyt mutatják</span>
+      </p>`;
+    }
 
     function show_loading() {
-      const weather = document.getElementById("weather");
-
-      weather.innerHTML = `
-        <div class="weather-card loading">
-          Betöltés...
-        </div>
-      `;
-
+      document.getElementById("weather").innerHTML = '<div class="weather-card loading">Betöltés...</div>';
       hide_error();
     }
 
-
     function show_error(message) {
+      document.getElementById("weather").innerHTML = "";
       const error = document.getElementById("error");
-
-      weather.innerHTML = "";
-
-      error.innerText = `HIBA: ${message}`;
-
+      error.textContent = "HIBA: " + message;
       error.style.display = "block";
     }
 
-
     function hide_error() {
-      const error = document.getElementById("error");
-
-      error.style.display = "none";
+      document.getElementById("error").style.display = "none";
     }
 
-
     async function search() {
-      const input = document.getElementById("cityInput");
-
+      const id = ++request_id;
       show_loading();
-
-      let city, weather;
-
       try {
-        city = await fetch_city(input.value.trim());
-        weather = await fetch_weather(city)
-      } catch ({ _, message }) {
-        show_error(message);
+        const city = await fetch_city(document.getElementById("cityInput").value);
+        const weather = await fetch_weather(city);
+        if (id !== request_id) return;
+        show_weather(city, weather);
+      } catch (error) {
+        if (id !== request_id) return;
+        show_error(error.message || "Ismeretlen hiba.");
+      }
+    }
+
+    function use_location() {
+      if (!navigator.geolocation) {
+        show_error("A böngésző nem támogatja a helymeghatározást.");
         return;
       }
-
-      show_weather(city, weather);
+      const id = ++request_id;
+      show_loading();
+      navigator.geolocation.getCurrentPosition(async position => {
+        try {
+          const lat = position.coords.latitude, lon = position.coords.longitude;
+          const [place, weather] = await Promise.all([
+            reverse_city(lat, lon),
+            fetch_weather({ latitude: lat, longitude: lon })
+          ]);
+          if (id !== request_id) return;
+          show_weather({ name: place.name, country: place.country, latitude: lat, longitude: lon }, weather);
+        } catch (error) {
+          if (id !== request_id) return;
+          show_error(error.message || "Nem sikerült lekérni az időjárást.");
+        }
+      }, () => {
+        if (id !== request_id) return;
+        show_error("Nem sikerült meghatározni a helyzeted. Engedélyezd a helymeghatározást a böngészőben.");
+      }, { timeout: 15000, maximumAge: 300000 });
     }
 
     search();
-
-    document.getElementById("cityInput").addEventListener(
-      "keydown",
-      event => {
-        if (event.key === "Enter")
-          search();
-      }
-    );
+    document.getElementById("cityInput").addEventListener("keydown", event => {
+      if (event.key === "Enter") search();
+    });
   </script>
 </body>
 
